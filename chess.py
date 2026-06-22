@@ -34,10 +34,32 @@ check = []
 while True:
     movimiento = input("¿Qué pieza desea mover? ").strip()
     
-    if movimiento in pieza or movimiento in peones:
-        # Guardamos el nombre de la pieza que se va a mover
-        pieza_a_mover = movimiento 
+    # 1. Buscamos la pieza en TODO el diccionario para encontrar su fila de origen
+    fila_origen = ""
+    columna_origen_idx = -1
+    
+    for f_nombre in tipos[1:]:  # Ignoramos la fila de "letras"
+        if movimiento in tab[f_nombre]:
+            fila_origen = f_nombre
+            columna_origen_idx = tab[f_nombre].index(movimiento)
+            break
+
+    # Si fila_origen se quedó vacía, significa que la pieza no existe en el tablero
+    if fila_origen != "":
+        pieza_a_mover = movimiento
         
+        # --- NUEVA VERIFICACIÓN DE COLOR ---
+        # Si estaba en ONE o TWO es Blanca, si estaba en SEVEN o EIGHT es Negra
+        if fila_origen in ["ONE", "TWO"]:
+            color = "Blanca"
+        elif fila_origen in ["SEVEN", "EIGHT"]:
+            color = "Negra"
+        else:
+            color = "Desconocido (Casilla vacía previamente)"
+        
+        print(f"[INFO]: Has seleccionado una pieza {color} ({pieza_a_mover})")
+        # ------------------------------------
+
         movimiento_2 = input("¿A qué columna (A-H) y a qué fila (1-8) va? ").strip().upper()
         patron = re.search(r'([A-H])([1-8])', movimiento_2)
         
@@ -49,23 +71,25 @@ while True:
                 columna = objeto_match.group(1)
                 fila = objeto_match.group(2)
                 
-                # --- NUEVO MATCH INTERNO ESTRUCTURAL ---
-                # Evaluamos la tupla (columna, fila)
                 match (columna, fila):
-                    # El 'if' aquí actúa como un filtro guardián para asegurar los rangos
-                    case (c, f) if c in "ABCDEFGH" and f in "12345678":
-                        casilla_objetivo = f"{c}{f}"
+                    case (c, f) if c in CONVERTIR_COLUMNA and f in CONVERTIR_FILA:
+                        fila_destino = CONVERTIR_FILA[f]
+                        columna_destino_idx = CONVERTIR_COLUMNA[c]
                         
-                        print(f"\n[SISTEMA]: Casilla {casilla_objetivo} detectada exitosamente.")
+                        # Borramos la pieza de su posición anterior
+                        tab[fila_origen][columna_origen_idx] = "  "
                         
-                        # Cambiamos la casilla en cuestión por la pieza usada
-                        tablero[casilla_objetivo] = pieza_a_mover
+                        # Colocamos la pieza en su nuevo destino
+                        tab[fila_destino][columna_destino_idx] = pieza_a_mover
                         
-                        print(f"¡Movimiento realizado! La casilla {casilla_objetivo} ahora contiene: {pieza_a_mover}")
+                        print(f"\n[SISTEMA]: Movimiento ejecutado por las {color}s.")
+                        print(f"La pieza {pieza_a_mover} se movió a la casilla {c}{f}.\n")
                         
+                        # Mostramos el tablero actualizado
+                        table.tablero(tab, tipos)
+                        break
                         
                     case _:
-                        # Por si la expresión regular dejó pasar algo extraño
                         print("Error crítico: Posición fuera del rango del tablero.")
     else:
-        print("Esa pieza no existe en tu tablero. Intenta de nuevo.")
+        print("Esa pieza no existe o ya fue capturada. Intenta de nuevo.")
