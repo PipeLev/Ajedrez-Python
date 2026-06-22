@@ -62,10 +62,6 @@ while True:
                         tablero[casilla_objetivo] = pieza_a_mover
                         
                         print(f"¡Movimiento realizado! La casilla {casilla_objetivo} ahora contiene: {pieza_a_mover}")
-                        check.append((c, f))
-
-
-
                         
                         
                     case _:
